@@ -1,0 +1,50 @@
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f1f4f2e4;
+  margin: 50;
+  padding: 490px;
+  color: #222;
+}
+
+h1 {
+  text-align: center;
+  color: #1e3a8a;
+}
+
+h2 {
+  color: #1d4ed8;
+}
+
+form, #bookList {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px;
+  margin-bottom: 25px;
+}
+
+input {
+  width: 95%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  background: #2563eb;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1e40af;
+}
+
+li {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}

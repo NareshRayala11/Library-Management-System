@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Management System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>Library Management System</h1>
+  <p>Manage your books easily!</p>
+
+  <h2>Add a Book</h2>
+
+  <form id="bookForm">
+    <input type="text" id="title" placeholder="Book Title" required>
+    <br><br>
+
+    <input type="text" id="author" placeholder="Author Name" required>
+    <br><br>
+
+    <input type="number" id="quantity" placeholder="Quantity" min="1" required>
+    <br><br>
+
+    <input type="number" id="year" placeholder="Published Year">
+    <br><br>
+
+    <button type="submit">Add Book</button>
+  </form>
+
+  <h2>Available Books</h2>
+  
+
+
+<input
+  type="text"
+  id="searchInput"
+  placeholder="Search by book title or author..."
+>
+
+<br><br>
+
+<ul id="bookList"></ul>
+
+  
+
+<script>
+const bookForm = document.getElementById("bookForm");
+const bookList = document.getElementById("bookList");
+
+const searchInput = document.getElementById("searchInput");
+let allBooks = [];
+
+
+// Display all books
+async function loadBooks() {
+  try {
+    const response = await fetch("/api/books");
+    const books = await response.json();
+
+    bookList.innerHTML = "";
+
+    
+books.forEach(book => {
+  const li = document.createElement("li");
+
+  const details = document.createElement("span");
+  details.textContent =
+    `${book.title} - ${book.author} | Quantity: ${book.quantity} `;
+
+  const deleteButton = document.createElement("button");
+  deleteButton.textContent = "Delete";
+  deleteButton.style.marginLeft = "10px";
+
+  deleteButton.addEventListener("click", async () => {
+    const response = await fetch(`/api/books/${book._id}`, {
+      method: "DELETE"
+    });
+
+    if (response.ok) {
+      await loadBooks();
+      alert("Book deleted successfully!");
+    } else {
+      alert("Could not delete book.");
+    }
+  });
+
+  li.appendChild(details);
+  li.appendChild(deleteButton);
+  bookList.appendChild(li);
+});
+
+  } catch (error) {
+    bookList.textContent = "Could not load books.";
+  }
+}
+
+function displayBooks(books) {
+  bookList.innerHTML = "";
+
+  books.forEach(book => {
+    const li = document.createElement("li");
+
+    const details = document.createElement("span");
+    details.textContent =
+      `${book.title} - ${book.author} | Quantity: ${book.quantity} `;
+
+    const editButton = document.createElement("button");
+    editButton.textContent = "Edit";
+    editButton.style.marginLeft = "10px";
+
+    editButton.addEventListener("click", async () => {
+      const newTitle = prompt("Enter book title:", book.title);
+      if (newTitle === null) return;
+
+      const newAuthor = prompt("Enter author name:", book.author);
+      if (newAuthor === null) return;
+
+      const newQuantity = prompt("Enter quantity:", book.quantity);
+      if (newQuantity === null) return;
+
+      const newYear = prompt("Enter published year:", book.publishedYear || "");
+      if (newYear === null) return;
+
+      const response = await fetch(`/api/books/${book._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          author: newAuthor.trim(),
+          quantity: Number(newQuantity),
+          publishedYear: newYear ? Number(newYear) : undefined
+        })
+      });
+
+      if (response.ok) {
+        await loadBooks();
+        alert("Book updated successfully!");
+      } else {
+        alert("Could not update book.");
+      }
+    });
+
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.style.marginLeft = "10px";
+
+    deleteButton.addEventListener("click", async () => {
+      const response = await fetch(`/api/books/${book._id}`, {
+        method: "DELETE"
+      });
+
+      if (response.ok) {
+        await loadBooks();
+        alert("Book deleted successfully!");
+      } else {
+        alert("Could not delete book.");
+      }
+    });
+
+    li.appendChild(details);
+    li.appendChild(editButton);
+    li.appendChild(deleteButton);
+    bookList.appendChild(li);
+  });
+}
+
+searchInput.addEventListener("input", function() {
+  const query = searchInput.value.toLowerCase().trim();
+
+  const filteredBooks = allBooks.filter(book =>
+    book.title.toLowerCase().includes(query) ||
+    book.author.toLowerCase().includes(query)
+  );
+
+  displayBooks(filteredBooks);
+});
+
+// Add a new book
+bookForm.addEventListener("submit", async function(event) {
+  event.preventDefault();
+
+  const newBook = {
+    title: document.getElementById("title").value.trim(),
+    author: document.getElementById("author").value.trim(),
+    quantity: Number(document.getElementById("quantity").value),
+    publishedYear: document.getElementById("year").value
+      ? Number(document.getElementById("year").value)
+      : undefined
+  };
+
+  try {
+    const response = await fetch("/api/books", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(newBook)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.error || "Could not add book.");
+      return;
+    }
+
+    bookForm.reset();
+    await loadBooks();
+    alert("Book added successfully!");
+  } catch (error) {
+    alert("Could not connect to the server. Check whether it is running.");
+  }
+});
+
+loadBooks();
+
+</script>
+
+
+</body>
+</html>
